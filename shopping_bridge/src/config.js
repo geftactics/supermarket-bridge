@@ -35,6 +35,7 @@ module.exports = {
   bindHost: process.env.BIND_HOST || '127.0.0.1',
   dryRun: boolEnv('BRIDGE_DRY_RUN', true),
   autoCompleteTodo: boolEnv('AUTO_COMPLETE_TODO', false),
+  useFavourites: boolEnv('USE_FAVOURITES', false),
   haUrl: process.env.HA_URL || '',
   haToken: process.env.HA_TOKEN || '',
   todoEntity: process.env.TODO_ENTITY || 'todo.shopping_list',

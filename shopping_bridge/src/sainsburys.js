@@ -77,30 +77,32 @@ class SainsburysBasket {
     const preferred = await this.findPreferredProduct(query);
     if (preferred) return preferred;
 
-    let favourites = [];
-    try {
-      const result = await this.runJson([
-        '--provider',
-        'sainsburys',
-        'favourites',
-        '--limit',
-        String(this.config.favouritesLimit),
-        '--json'
-      ]);
-      favourites = (result.products || []).filter((product) =>
-        productScore(product, query) > 0
-      ).sort((a, b) => productScore(b, query) - productScore(a, query));
-    } catch (error) {
-      console.warn(`favourites lookup failed, falling back to search: ${error.message}`);
-    }
+    if (this.config.useFavourites) {
+      let favourites = [];
+      try {
+        const result = await this.runJson([
+          '--provider',
+          'sainsburys',
+          'favourites',
+          '--limit',
+          String(this.config.favouritesLimit),
+          '--json'
+        ]);
+        favourites = (result.products || []).filter((product) =>
+          productScore(product, query) > 0
+        ).sort((a, b) => productScore(b, query) - productScore(a, query));
+      } catch (error) {
+        console.warn(`favourites lookup failed, falling back to search: ${firstLine(error.message)}`);
+      }
 
-    const favourite = chooseInStock(favourites);
-    if (favourite) {
-      return {
-        source: 'favourites',
-        product: favourite,
-        candidates: favourites.map(productSummary)
-      };
+      const favourite = chooseInStock(favourites);
+      if (favourite) {
+        return {
+          source: 'favourites',
+          product: favourite,
+          candidates: favourites.map(productSummary)
+        };
+      }
     }
 
     const searchResult = await this.runJson([
@@ -186,6 +188,10 @@ function productScore(product, query) {
   return needle.split(/\s+/).reduce((score, term) => {
     return haystack.includes(term) ? score + 100 + term.length : score;
   }, 0);
+}
+
+function firstLine(value) {
+  return String(value || '').split(/\r?\n/)[0];
 }
 
 module.exports = {

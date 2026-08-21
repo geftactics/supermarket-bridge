@@ -91,6 +91,10 @@ The App polls incomplete todo items, records processed UIDs in `/data/state.json
 and logs `todo processed`, `todo skipped`, or `todo poll failed`. Set
 `poll_interval_seconds: 0` to disable polling and use the webhook endpoint only.
 
+`use_favourites` controls whether the bridge calls Sainsbury's authenticated
+favourites endpoint before normal search. Leave it `false` until the App has a
+valid Sainsbury's session; preferred products still run first either way.
+
 ## App packaging notes
 
 The runtime needs:

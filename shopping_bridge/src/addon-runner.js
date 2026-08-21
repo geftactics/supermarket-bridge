@@ -22,6 +22,7 @@ if (fs.existsSync(optionsFile)) {
   process.env.SUPERMARKET_PASSWORD = process.env.SAINSBURYS_PASSWORD;
   process.env.SAINSBURYS_STORE_NUMBER = options.sainsburys_store_number || '0560';
   process.env.AUTO_COMPLETE_TODO = boolString(options.auto_complete_todo, false);
+  process.env.USE_FAVOURITES = boolString(options.use_favourites, false);
   process.env.POLL_INTERVAL_SECONDS = String(options.poll_interval_seconds ?? 30);
 
   if (options.preferred_products) {
