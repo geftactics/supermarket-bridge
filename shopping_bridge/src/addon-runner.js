@@ -3,6 +3,7 @@ const path = require('node:path');
 
 const optionsFile = '/data/options.json';
 const preferredProductsFile = '/data/preferred-products.json';
+const sainsburysSessionFile = '/data/.sainsburys/session.json';
 
 function boolString(value, defaultValue) {
   if (value == null) return defaultValue ? 'true' : 'false';
@@ -24,6 +25,11 @@ if (fs.existsSync(optionsFile)) {
   process.env.AUTO_COMPLETE_TODO = boolString(options.auto_complete_todo, false);
   process.env.USE_FAVOURITES = boolString(options.use_favourites, false);
   process.env.POLL_INTERVAL_SECONDS = String(options.poll_interval_seconds ?? 30);
+  process.env.FAILED_RETRY_SECONDS = String(options.failed_retry_seconds ?? 900);
+
+  if (options.sainsburys_session_json) {
+    writeSessionJson(options.sainsburys_session_json);
+  }
 
   if (options.preferred_products) {
     fs.mkdirSync(path.dirname(preferredProductsFile), { recursive: true });
@@ -66,4 +72,16 @@ function normalizePreferredProducts(value) {
       Array.isArray(ids) ? ids.map(String) : [String(ids)]
     ])
   );
+}
+
+function writeSessionJson(raw) {
+  const text = String(raw).trim();
+  if (!text) return;
+  const parsed = JSON.parse(text);
+  if (!Array.isArray(parsed.cookies)) {
+    throw new Error('sainsburys_session_json must be an open-supermarkets session JSON object with a cookies array');
+  }
+  fs.mkdirSync(path.dirname(sainsburysSessionFile), { recursive: true });
+  fs.writeFileSync(sainsburysSessionFile, `${JSON.stringify(parsed, null, 2)}\n`, { mode: 0o600 });
+  console.log(`imported Sainsbury's session to ${sainsburysSessionFile}`);
 }

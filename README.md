@@ -95,6 +95,11 @@ and logs `todo processed`, `todo skipped`, or `todo poll failed`. Set
 favourites endpoint before normal search. Leave it `false` until the App has a
 valid Sainsbury's session; preferred products still run first either way.
 
+If headless Sainsbury's login fails inside the App, paste a known-good
+`~/.sainsburys/session.json` from a successful local `supermarket login` into
+the `sainsburys_session_json` App option. The App writes it to
+`/data/.sainsburys/session.json`.
+
 ## App packaging notes
 
 The runtime needs:

@@ -8,19 +8,38 @@ async function processTodoItem(config, basket, item) {
   if (!uid) throw new Error('Todo item needs uid, id, or summary');
 
   const state = await loadState(config.stateFile);
-  const previousStatus = state.processed[uid]?.status;
-  if (previousStatus === 'added' || (config.dryRun && previousStatus === 'dry_run')) {
+  const previous = state.processed[uid];
+  const previousStatus = previous?.status;
+  if (
+    previousStatus === 'added' ||
+    (config.dryRun && previousStatus === 'dry_run') ||
+    shouldDelayFailedRetry(config, previous)
+  ) {
     return {
       skipped: true,
-      reason: previousStatus === 'dry_run' ? 'already_dry_run' : 'already_processed',
+      reason: skipReason(previousStatus),
       uid,
-      previous: state.processed[uid]
+      previous
     };
   }
 
   const parsed = parseShoppingText(item.summary);
-  const match = await basket.findProduct(parsed.query);
-  const addResult = await basket.addProduct(match.product, parsed.quantity);
+  let match;
+  let addResult;
+  try {
+    match = await basket.findProduct(parsed.query);
+    addResult = await basket.addProduct(match.product, parsed.quantity);
+  } catch (error) {
+    await markProcessed(config.stateFile, uid, {
+      uid,
+      status: 'failed',
+      summary: item.summary,
+      parsed,
+      error: firstLine(error.message),
+      retryAfter: new Date(Date.now() + config.failedRetrySeconds * 1000).toISOString()
+    });
+    throw error;
+  }
 
   const record = await markProcessed(config.stateFile, uid, {
     uid,
@@ -45,6 +64,21 @@ async function processTodoItem(config, basket, item) {
     candidates: match.candidates,
     record
   };
+}
+
+function shouldDelayFailedRetry(config, previous) {
+  if (config.dryRun || previous?.status !== 'failed' || !previous.retryAfter) return false;
+  return new Date(previous.retryAfter).getTime() > Date.now();
+}
+
+function skipReason(status) {
+  if (status === 'dry_run') return 'already_dry_run';
+  if (status === 'failed') return 'failed_retry_delayed';
+  return 'already_processed';
+}
+
+function firstLine(value) {
+  return String(value || '').split(/\r?\n/)[0];
 }
 
 module.exports = { processTodoItem };
