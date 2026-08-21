@@ -1,0 +1,189 @@
+const { execFile } = require('node:child_process');
+const fs = require('node:fs/promises');
+const { promisify } = require('node:util');
+
+const execFileAsync = promisify(execFile);
+
+function productSummary(product) {
+  if (!product) return null;
+  return {
+    product_uid: product.product_uid,
+    name: product.name,
+    price: product.retail_price?.price,
+    size: product.size,
+    in_stock: product.in_stock
+  };
+}
+
+function chooseInStock(products) {
+  return products.find((product) => product.in_stock) || products[0] || null;
+}
+
+function normalizeTerm(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+class SainsburysBasket {
+  constructor(config) {
+    this.config = config;
+    this.bin = process.env.SUPERMARKET_BIN || 'supermarket';
+  }
+
+  async run(args, options = {}) {
+    try {
+      const { stdout } = await execFileAsync(this.bin, args, {
+        cwd: process.cwd(),
+        timeout: options.timeout || 45000,
+        maxBuffer: 1024 * 1024 * 5,
+        env: {
+          ...process.env,
+          SUPERMARKET_EMAIL: process.env.SUPERMARKET_EMAIL || process.env.SAINSBURYS_EMAIL,
+          SUPERMARKET_PASSWORD: process.env.SUPERMARKET_PASSWORD || process.env.SAINSBURYS_PASSWORD
+        }
+      });
+      return stdout;
+    } catch (error) {
+      const stderr = error.stderr ? String(error.stderr).trim() : '';
+      const stdout = error.stdout ? String(error.stdout).trim() : '';
+      const message = [stderr, stdout, error.message].filter(Boolean).join('\n');
+      throw new Error(message);
+    }
+  }
+
+  async runJson(args) {
+    const stdout = await this.run(args);
+    return JSON.parse(stdout);
+  }
+
+  async loadPreferredProducts() {
+    try {
+      return JSON.parse(await fs.readFile(this.config.preferredProductsFile, 'utf8'));
+    } catch (error) {
+      if (error.code === 'ENOENT') return {};
+      throw error;
+    }
+  }
+
+  async status() {
+    return this.runJson(['--provider', 'sainsburys', 'status', '--json']);
+  }
+
+  async findProduct(query) {
+    const preferred = await this.findPreferredProduct(query);
+    if (preferred) return preferred;
+
+    let favourites = [];
+    try {
+      const result = await this.runJson([
+        '--provider',
+        'sainsburys',
+        'favourites',
+        '--limit',
+        String(this.config.favouritesLimit),
+        '--json'
+      ]);
+      favourites = (result.products || []).filter((product) =>
+        productScore(product, query) > 0
+      ).sort((a, b) => productScore(b, query) - productScore(a, query));
+    } catch (error) {
+      console.warn(`favourites lookup failed, falling back to search: ${error.message}`);
+    }
+
+    const favourite = chooseInStock(favourites);
+    if (favourite) {
+      return {
+        source: 'favourites',
+        product: favourite,
+        candidates: favourites.map(productSummary)
+      };
+    }
+
+    const searchResult = await this.runJson([
+      '--provider',
+      'sainsburys',
+      'search',
+      query,
+      '--limit',
+      String(this.config.searchLimit),
+      '--json'
+    ]);
+    const results = searchResult.products || [];
+    const product = chooseInStock(results);
+    if (!product) {
+      throw new Error(`No Sainsbury's product found for "${query}"`);
+    }
+
+    return {
+      source: 'search',
+      product,
+      candidates: results.map(productSummary)
+    };
+  }
+
+  async findPreferredProduct(query) {
+    const preferences = await this.loadPreferredProducts();
+    const ids = preferences[normalizeTerm(query)];
+    const productIds = Array.isArray(ids) ? ids : ids ? [ids] : [];
+
+    if (productIds.length === 0) return null;
+
+    const searchResult = await this.runJson([
+      '--provider',
+      'sainsburys',
+      'search',
+      query,
+      '--limit',
+      String(Math.max(this.config.searchLimit, productIds.length)),
+      '--json'
+    ]);
+    const candidates = searchResult.products || [];
+    const preferredProducts = productIds.map((productId) => {
+      const product = candidates.find((candidate) => candidate.product_uid === String(productId));
+      return product || {
+        product_uid: String(productId),
+        name: `Preferred product ${productId}`,
+        in_stock: true,
+        retail_price: {}
+      };
+    });
+
+    const product = chooseInStock(preferredProducts);
+    return {
+      source: 'preferred',
+      product,
+      candidates: preferredProducts.map(productSummary)
+    };
+  }
+
+  async addProduct(product, quantity) {
+    if (this.config.dryRun) {
+      return { dryRun: true };
+    }
+
+    await this.run([
+      '--provider',
+      'sainsburys',
+      'add',
+      product.product_uid,
+      '--qty',
+      String(quantity)
+    ]);
+    return { dryRun: false };
+  }
+}
+
+function productScore(product, query) {
+  const haystack = `${product.name || ''} ${product.description || ''}`.toLowerCase();
+  const needle = String(query || '').trim().toLowerCase();
+  if (!needle) return 0;
+  if (haystack === needle) return 1000;
+  if (haystack.includes(needle)) return 500 + needle.length;
+  return needle.split(/\s+/).reduce((score, term) => {
+    return haystack.includes(term) ? score + 100 + term.length : score;
+  }, 0);
+}
+
+module.exports = {
+  SainsburysBasket,
+  productSummary
+};

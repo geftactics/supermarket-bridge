@@ -1,0 +1,40 @@
+name: Shopping Bridge
+version: "0.1.0"
+slug: shopping_bridge
+description: Bridge Home Assistant todo shopping items into a Sainsbury's basket
+url: "https://github.com/geftactics/shopping_bridge"
+arch:
+  - amd64
+  - aarch64
+startup: services
+boot: auto
+init: false
+ports:
+  8124/tcp: 8124
+map:
+  - addon_config:rw
+options:
+  bridge_dry_run: true
+  todo_entity: todo.geoff_squiggle_org_shopping_list
+  sainsburys_store_number: "0560"
+  auto_complete_todo: false
+  preferred_products:
+    bananas:
+      - "7430790"
+      - "1196757"
+    bacon:
+      - "8123900"
+      - "8123902"
+      - "7640075"
+schema:
+  bridge_dry_run: bool
+  todo_entity: str
+  ha_url: str?
+  ha_token: password?
+  sainsburys_email: str?
+  sainsburys_password: password?
+  sainsburys_store_number: str
+  auto_complete_todo: bool
+  preferred_products:
+    "[a-zA-Z0-9 _-]+":
+      - str
