@@ -19,13 +19,15 @@ options:
   sainsburys_store_number: "0560"
   auto_complete_todo: false
   preferred_products:
-    bananas:
-      - "7430790"
-      - "1196757"
-    bacon:
-      - "8123900"
-      - "8123902"
-      - "7640075"
+    - term: bananas
+      product_ids:
+        - "7430790"
+        - "1196757"
+    - term: bacon
+      product_ids:
+        - "8123900"
+        - "8123902"
+        - "7640075"
 schema:
   bridge_dry_run: bool
   todo_entity: str
@@ -36,5 +38,6 @@ schema:
   sainsburys_store_number: str
   auto_complete_todo: bool
   preferred_products:
-    "[a-zA-Z0-9 _-]+":
-      - str
+    - term: str
+      product_ids:
+        - str

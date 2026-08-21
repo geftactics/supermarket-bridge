@@ -41,6 +41,21 @@ process.env.PORT = process.env.PORT || '8124';
 require('./server');
 
 function normalizePreferredProducts(value) {
+  if (Array.isArray(value)) {
+    return Object.fromEntries(
+      value
+        .filter((entry) => entry?.term)
+        .map((entry) => [
+          String(entry.term).trim().toLowerCase(),
+          Array.isArray(entry.product_ids)
+            ? entry.product_ids.map(String)
+            : entry.product_ids
+              ? [String(entry.product_ids)]
+              : []
+        ])
+    );
+  }
+
   return Object.fromEntries(
     Object.entries(value).map(([key, ids]) => [
       key.trim().toLowerCase(),

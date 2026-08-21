@@ -55,6 +55,21 @@ specific Sainsbury's product IDs before favourites/search:
 }
 ```
 
+In Home Assistant App options, the same preferences are entered as:
+
+```yaml
+preferred_products:
+  - term: bananas
+    product_ids:
+      - "7430790"
+      - "1196757"
+  - term: bacon
+    product_ids:
+      - "8123900"
+      - "8123902"
+      - "7640075"
+```
+
 The bridge tries IDs in order and uses the first in-stock product. If no
 preferred product is usable, it falls back to favourites and then search.
 
