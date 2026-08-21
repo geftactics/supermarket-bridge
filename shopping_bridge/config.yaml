@@ -1,5 +1,5 @@
 name: Shopping Bridge
-version: "0.1.3"
+version: "0.1.4"
 slug: shopping_bridge
 description: Bridge Home Assistant todo shopping items into a Sainsbury's basket
 url: "https://github.com/geftactics/shopping_bridge"

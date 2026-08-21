@@ -8,10 +8,11 @@ async function processTodoItem(config, basket, item) {
   if (!uid) throw new Error('Todo item needs uid, id, or summary');
 
   const state = await loadState(config.stateFile);
-  if (state.processed[uid]?.status === 'added') {
+  const previousStatus = state.processed[uid]?.status;
+  if (previousStatus === 'added' || (config.dryRun && previousStatus === 'dry_run')) {
     return {
       skipped: true,
-      reason: 'already_processed',
+      reason: previousStatus === 'dry_run' ? 'already_dry_run' : 'already_processed',
       uid,
       previous: state.processed[uid]
     };

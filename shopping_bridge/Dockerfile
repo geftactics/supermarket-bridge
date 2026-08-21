@@ -8,6 +8,7 @@ ENV STATE_FILE=/data/state.json
 ENV PREFERRED_PRODUCTS_FILE=/data/preferred-products.json
 ENV BIND_HOST=0.0.0.0
 ENV SUPERMARKET_BIN=/app/node_modules/.bin/supermarket
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 COPY package*.json ./
 RUN npm install --omit=dev \
