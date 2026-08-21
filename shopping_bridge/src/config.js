@@ -38,6 +38,7 @@ module.exports = {
   haUrl: process.env.HA_URL || '',
   haToken: process.env.HA_TOKEN || '',
   todoEntity: process.env.TODO_ENTITY || 'todo.shopping_list',
+  pollIntervalSeconds: intEnv('POLL_INTERVAL_SECONDS', 0),
   stateFile: path.resolve(root, process.env.STATE_FILE || './data/state.json'),
   preferredProductsFile: path.resolve(
     root,

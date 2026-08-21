@@ -87,26 +87,18 @@ curl -X POST http://127.0.0.1:8124/ha/todo-added \
   -d '{"uid":"manual-bananas","summary":"Bananas"}'
 ```
 
-## Home Assistant automation shape
+## Home Assistant App polling
 
-Use a native todo trigger and queue runs so basket writes stay sequential:
+In the Home Assistant App, set:
 
 ```yaml
-triggers:
-  - trigger: todo.item_added
-    target:
-      entity_id: todo.shopping_list
-actions:
-  - action: rest_command.shopping_bridge_todo_added
-    data:
-      uid: "{{ trigger.item.uid }}"
-      summary: "{{ trigger.item.summary }}"
-mode: queued
+todo_entity: todo.shopping_list
+poll_interval_seconds: 30
 ```
 
-The exact `trigger.item` payload can vary by Home Assistant version. If it only
-sends a UID, the bridge can fetch the list from HA when `HA_URL` and `HA_TOKEN`
-are configured.
+The App polls incomplete todo items, records processed UIDs in `/data/state.json`,
+and logs `todo processed`, `todo skipped`, or `todo poll failed`. Set
+`poll_interval_seconds: 0` to disable polling and use the webhook endpoint only.
 
 ## App packaging notes
 
@@ -134,4 +126,5 @@ For the App runtime, `/data` is persistent and used for:
 - `/data/preferred-products.json`
 - `/data/.sainsburys/session.json`
 
-The service listens on port `8124` inside the App.
+The service listens on port `8124` inside the App. Polling uses Home Assistant's
+internal API; no separate long-lived HA token is needed when installed as an App.

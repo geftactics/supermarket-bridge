@@ -5,6 +5,7 @@ const { processTodoItem } = require('./processor');
 const { SainsburysBasket } = require('./sainsburys');
 
 const basket = new SainsburysBasket(config);
+let pollInProgress = false;
 
 function json(res, status, body) {
   res.writeHead(status, { 'content-type': 'application/json' });
@@ -34,7 +35,9 @@ async function handler(req, res) {
       json(res, 200, {
         ok: true,
         dryRun: config.dryRun,
-        todoEntity: config.todoEntity
+        todoEntity: config.todoEntity,
+        pollIntervalSeconds: config.pollIntervalSeconds,
+        haApiConfigured: Boolean(config.haUrl && config.haToken)
       });
       return;
     }
@@ -71,4 +74,35 @@ server.on('error', (error) => {
 server.listen(config.port, config.bindHost, () => {
   console.log(`shopping-bridge listening on http://${config.bindHost}:${config.port}`);
   console.log(`dry-run: ${config.dryRun ? 'on' : 'off'}`);
+  console.log(`todo entity: ${config.todoEntity}`);
+  if (config.pollIntervalSeconds > 0 && config.haUrl && config.haToken) {
+    console.log(`todo polling: every ${config.pollIntervalSeconds}s`);
+    pollTodoList();
+    setInterval(pollTodoList, config.pollIntervalSeconds * 1000);
+  } else {
+    console.log('todo polling: off');
+  }
 });
+
+async function pollTodoList() {
+  if (pollInProgress) return;
+  pollInProgress = true;
+  try {
+    const items = await getTodoItems(config, 'needs_action');
+    for (const item of items) {
+      const result = await processTodoItem(config, basket, item);
+      if (result.skipped) {
+        console.log(`todo skipped: ${item.summary} (${result.reason})`);
+      } else {
+        console.log(
+          `todo processed: ${item.summary} -> ${result.product?.name || 'unknown'} ` +
+          `[${result.selectedFrom}; ${result.dryRun ? 'dry-run' : 'added'}]`
+        );
+      }
+    }
+  } catch (error) {
+    console.error(`todo poll failed: ${error.message}`);
+  } finally {
+    pollInProgress = false;
+  }
+}

@@ -22,6 +22,7 @@ if (fs.existsSync(optionsFile)) {
   process.env.SUPERMARKET_PASSWORD = process.env.SAINSBURYS_PASSWORD;
   process.env.SAINSBURYS_STORE_NUMBER = options.sainsburys_store_number || '0560';
   process.env.AUTO_COMPLETE_TODO = boolString(options.auto_complete_todo, false);
+  process.env.POLL_INTERVAL_SECONDS = String(options.poll_interval_seconds ?? 30);
 
   if (options.preferred_products) {
     fs.mkdirSync(path.dirname(preferredProductsFile), { recursive: true });
@@ -33,6 +34,8 @@ if (fs.existsSync(optionsFile)) {
 }
 
 process.env.HOME = process.env.HOME || '/data';
+process.env.HA_URL = process.env.HA_URL || 'http://supervisor/core';
+process.env.HA_TOKEN = process.env.HA_TOKEN || process.env.SUPERVISOR_TOKEN || '';
 process.env.STATE_FILE = process.env.STATE_FILE || '/data/state.json';
 process.env.PREFERRED_PRODUCTS_FILE = process.env.PREFERRED_PRODUCTS_FILE || preferredProductsFile;
 process.env.BIND_HOST = process.env.BIND_HOST || '0.0.0.0';
