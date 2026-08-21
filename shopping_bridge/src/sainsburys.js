@@ -1,5 +1,6 @@
 const { execFile } = require('node:child_process');
 const fs = require('node:fs/promises');
+const path = require('node:path');
 const { promisify } = require('node:util');
 
 const execFileAsync = promisify(execFile);
@@ -26,7 +27,7 @@ function normalizeTerm(value) {
 class SainsburysBasket {
   constructor(config) {
     this.config = config;
-    this.bin = process.env.SUPERMARKET_BIN || 'supermarket';
+    this.bin = process.env.SUPERMARKET_BIN || path.resolve(__dirname, '..', 'node_modules', '.bin', 'supermarket');
   }
 
   async run(args, options = {}) {
@@ -37,6 +38,10 @@ class SainsburysBasket {
         maxBuffer: 1024 * 1024 * 5,
         env: {
           ...process.env,
+          PATH: [
+            path.resolve(__dirname, '..', 'node_modules', '.bin'),
+            process.env.PATH || ''
+          ].filter(Boolean).join(path.delimiter),
           SUPERMARKET_EMAIL: process.env.SUPERMARKET_EMAIL || process.env.SAINSBURYS_EMAIL,
           SUPERMARKET_PASSWORD: process.env.SUPERMARKET_PASSWORD || process.env.SAINSBURYS_PASSWORD
         }
