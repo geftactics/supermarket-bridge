@@ -37,7 +37,7 @@ module.exports = {
   autoCompleteTodo: boolEnv('AUTO_COMPLETE_TODO', false),
   haUrl: process.env.HA_URL || '',
   haToken: process.env.HA_TOKEN || '',
-  todoEntity: process.env.TODO_ENTITY || 'todo.geoff_squiggle_org_shopping_list',
+  todoEntity: process.env.TODO_ENTITY || 'todo.shopping_list',
   stateFile: path.resolve(root, process.env.STATE_FILE || './data/state.json'),
   preferredProductsFile: path.resolve(
     root,

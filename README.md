@@ -86,7 +86,7 @@ Use a native todo trigger and queue runs so basket writes stay sequential:
 triggers:
   - trigger: todo.item_added
     target:
-      entity_id: todo.geoff_squiggle_org_shopping_list
+      entity_id: todo.shopping_list
 actions:
   - action: rest_command.shopping_bridge_todo_added
     data:

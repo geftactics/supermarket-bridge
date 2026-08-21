@@ -1,5 +1,5 @@
 name: Shopping Bridge
-version: "0.1.0"
+version: "0.1.1"
 slug: shopping_bridge
 description: Bridge Home Assistant todo shopping items into a Sainsbury's basket
 url: "https://github.com/geftactics/shopping_bridge"
@@ -15,7 +15,9 @@ map:
   - addon_config:rw
 options:
   bridge_dry_run: true
-  todo_entity: todo.geoff_squiggle_org_shopping_list
+  todo_entity: todo.shopping_list
+  sainsburys_email: ""
+  sainsburys_password: ""
   sainsburys_store_number: "0560"
   auto_complete_todo: false
   preferred_products:
