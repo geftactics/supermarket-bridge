@@ -11,7 +11,10 @@ ENV SUPERMARKET_BIN=/app/node_modules/.bin/supermarket
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 COPY package*.json ./
-RUN npm install --omit=dev \
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends xvfb \
+  && rm -rf /var/lib/apt/lists/* \
+  && npm install --omit=dev \
   && npx playwright install --with-deps chromium
 
 COPY src ./src

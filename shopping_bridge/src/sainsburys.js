@@ -32,27 +32,48 @@ class SainsburysBasket {
 
   async run(args, options = {}) {
     try {
-      const { stdout } = await execFileAsync(this.bin, args, {
-        cwd: process.cwd(),
-        timeout: options.timeout || 45000,
-        maxBuffer: 1024 * 1024 * 5,
-        env: {
-          ...process.env,
-          PATH: [
-            path.resolve(__dirname, '..', 'node_modules', '.bin'),
-            process.env.PATH || ''
-          ].filter(Boolean).join(path.delimiter),
-          SUPERMARKET_EMAIL: process.env.SUPERMARKET_EMAIL || process.env.SAINSBURYS_EMAIL,
-          SUPERMARKET_PASSWORD: process.env.SUPERMARKET_PASSWORD || process.env.SAINSBURYS_PASSWORD
-        }
-      });
-      return stdout;
+      return await this.execSupermarket(args, options);
     } catch (error) {
-      const stderr = error.stderr ? String(error.stderr).trim() : '';
-      const stdout = error.stdout ? String(error.stdout).trim() : '';
-      const message = [stderr, stdout, error.message].filter(Boolean).join('\n');
-      throw new Error(message);
+      const message = commandErrorMessage(error);
+      if (options.retriedAuth || !isAuthFailure(message) || !hasCredentials()) {
+        throw new Error(message);
+      }
+
+      console.warn("Sainsbury's auth failed; attempting headed login under xvfb");
+      await this.loginWithVirtualDisplay();
+      return this.run(args, { ...options, retriedAuth: true });
     }
+  }
+
+  async execSupermarket(args, options = {}) {
+    const { stdout } = await execFileAsync(this.bin, args, {
+      cwd: process.cwd(),
+      timeout: options.timeout || 45000,
+      maxBuffer: 1024 * 1024 * 5,
+      env: commandEnv()
+    });
+    return stdout;
+  }
+
+  async loginWithVirtualDisplay() {
+    const args = [
+      '-a',
+      this.bin,
+      '--provider',
+      'sainsburys',
+      'login',
+      '--email',
+      process.env.SUPERMARKET_EMAIL || process.env.SAINSBURYS_EMAIL,
+      '--password',
+      process.env.SUPERMARKET_PASSWORD || process.env.SAINSBURYS_PASSWORD
+    ];
+    await execFileAsync('xvfb-run', args, {
+      cwd: process.cwd(),
+      timeout: 90000,
+      maxBuffer: 1024 * 1024 * 5,
+      env: commandEnv()
+    });
+    console.warn("Sainsbury's xvfb login completed");
   }
 
   async runJson(args) {
@@ -192,6 +213,35 @@ function productScore(product, query) {
 
 function firstLine(value) {
   return String(value || '').split(/\r?\n/)[0];
+}
+
+function commandEnv() {
+  return {
+    ...process.env,
+    PATH: [
+      path.resolve(__dirname, '..', 'node_modules', '.bin'),
+      process.env.PATH || ''
+    ].filter(Boolean).join(path.delimiter),
+    SUPERMARKET_EMAIL: process.env.SUPERMARKET_EMAIL || process.env.SAINSBURYS_EMAIL,
+    SUPERMARKET_PASSWORD: process.env.SUPERMARKET_PASSWORD || process.env.SAINSBURYS_PASSWORD
+  };
+}
+
+function commandErrorMessage(error) {
+  const stderr = error.stderr ? String(error.stderr).trim() : '';
+  const stdout = error.stdout ? String(error.stdout).trim() : '';
+  return [stderr, stdout, error.message].filter(Boolean).join('\n');
+}
+
+function isAuthFailure(message) {
+  return /session rejected|HTTP 401|Not authenticated|Failed to add to basket/i.test(message);
+}
+
+function hasCredentials() {
+  return Boolean(
+    (process.env.SUPERMARKET_EMAIL || process.env.SAINSBURYS_EMAIL) &&
+    (process.env.SUPERMARKET_PASSWORD || process.env.SAINSBURYS_PASSWORD)
+  );
 }
 
 module.exports = {
