@@ -55,3 +55,7 @@ Logs are timestamped, redact credentials, and use plain messages such as:
 Processed item state is stored in `/data/state.json`. Preferred product config
 is written to `/data/preferred-products.json`. Sainsbury's session data is kept
 under `/data/.sainsburys/`.
+
+The todo entity is entered as text, for example `todo.shopping_list`. Home
+Assistant add-on options do not provide a dynamic entity picker; the add-on
+validates the entity at startup and exits if it is missing or not a todo entity.

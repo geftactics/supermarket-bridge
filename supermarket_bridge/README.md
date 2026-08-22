@@ -40,3 +40,7 @@ session expires or is rejected, it logs in again under Xvfb and retries the
 basket operation once.
 
 The `/health` endpoint is available on port `8124`.
+
+The todo entity is entered as text, for example `todo.shopping_list`. Home
+Assistant add-on options do not provide a dynamic entity picker; the add-on
+validates the entity at startup and exits if it is missing or not a todo entity.

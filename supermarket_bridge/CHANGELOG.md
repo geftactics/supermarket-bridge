@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.14
+
+- Remove the manual Sainsbury's session JSON option. The add-on logs in at
+  startup and persists its own session under `/data/.sainsburys/`.
+
 ## 0.1.13
 
 - Add this changelog so Home Assistant can show release notes during updates.
