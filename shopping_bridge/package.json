@@ -1,5 +1,5 @@
 {
-  "name": "shopping-bridge",
+  "name": "supermarket-bridge",
   "version": "0.1.0",
   "private": true,
   "description": "Bridge Home Assistant todo shopping items into a Sainsbury's basket.",

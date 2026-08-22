@@ -16,8 +16,8 @@ function intEnv(name, defaultValue) {
 module.exports = {
   port: intEnv('PORT', 8124),
   bindHost: process.env.BIND_HOST || '127.0.0.1',
-  autoCompleteTodo: boolEnv('AUTO_COMPLETE_TODO', false),
-  useFavourites: boolEnv('USE_FAVOURITES', false),
+  autoCompleteTodo: boolEnv('AUTO_COMPLETE_TODO', true),
+  useFavourites: true,
   haUrl: process.env.HA_URL || '',
   haToken: process.env.HA_TOKEN || '',
   todoEntity: process.env.TODO_ENTITY || 'todo.shopping_list',

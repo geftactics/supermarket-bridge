@@ -38,7 +38,7 @@ async function handler(req, res) {
 const server = http.createServer(handler);
 
 server.on('error', (error) => {
-  console.error(`failed to start shopping-bridge: ${error.message}`);
+  console.error(`failed to start supermarket-bridge: ${error.message}`);
   process.exitCode = 1;
 });
 
@@ -48,7 +48,7 @@ start().catch((error) => {
 });
 
 async function start() {
-  console.log('---- shopping-bridge starting ----');
+  console.log('---- supermarket-bridge starting ----');
   await validateStartup();
   await basket.ensureAuthenticated();
 

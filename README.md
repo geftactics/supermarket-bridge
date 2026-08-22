@@ -1,8 +1,8 @@
-# shopping-bridge
+# supermarket-bridge
 
-Home Assistant add-on repository for Shopping Bridge.
+Home Assistant add-on repository for Supermarket Bridge.
 
-Shopping Bridge polls a Home Assistant todo shopping list and adds matching
+Supermarket Bridge polls a Home Assistant todo shopping list and adds matching
 items to a Sainsbury's basket. It does not automate checkout.
 
 ## Install
@@ -13,15 +13,14 @@ Add this repository to the Home Assistant add-on store:
 https://github.com/geftactics/shopping_bridge
 ```
 
-Install the `Shopping Bridge` add-on, then configure:
+Install the `Supermarket Bridge` add-on, then configure:
 
 ```yaml
 todo_entity: todo.shopping_list
 sainsburys_email: ""
 sainsburys_password: ""
 sainsburys_store_number: "0560"
-auto_complete_todo: false
-use_favourites: false
+auto_complete_todo: true
 poll_interval_seconds: 30
 failed_retry_seconds: 900
 preferred_products:
@@ -47,7 +46,7 @@ retries the basket operation once.
 Logs are timestamped, redact credentials, and use plain messages such as:
 
 ```text
-2026-08-22T09:39:48.967Z ---- shopping-bridge starting ----
+2026-08-22T09:39:48.967Z ---- supermarket-bridge starting ----
 2026-08-22T09:39:51.204Z Polling todo entity 'todo.shopping_list' every 30s.
 2026-08-22T09:40:22.811Z Added Bananas -> Sainsbury's Fairtrade Bananas x5 [preferred]
 2026-08-22T09:40:52.112Z Skipped Marmite: retry delayed until 2026-08-22T09:55:52.112Z.

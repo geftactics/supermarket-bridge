@@ -1,6 +1,6 @@
-# Shopping Bridge
+# Supermarket Bridge
 
-Shopping Bridge polls a Home Assistant todo shopping list and adds matching
+Supermarket Bridge polls a Home Assistant todo shopping list and adds matching
 items to a Sainsbury's basket. It does not automate checkout.
 
 ## Configuration
@@ -10,8 +10,7 @@ todo_entity: todo.shopping_list
 sainsburys_email: ""
 sainsburys_password: ""
 sainsburys_store_number: "0560"
-auto_complete_todo: false
-use_favourites: false
+auto_complete_todo: true
 poll_interval_seconds: 30
 failed_retry_seconds: 900
 preferred_products:
@@ -24,8 +23,8 @@ preferred_products:
 `auto_complete_todo` marks an item complete in Home Assistant after it has been
 added to the Sainsbury's basket.
 
-`use_favourites` checks Sainsbury's favourites before normal search. Preferred
-products are checked first either way.
+Sainsbury's favourites are always checked before normal search. Preferred
+products are checked first.
 
 `failed_retry_seconds` controls how long a failed item waits before the next
 retry. This avoids repeating the same failed basket operation every poll.

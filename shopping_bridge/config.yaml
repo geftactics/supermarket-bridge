@@ -1,5 +1,5 @@
-name: Shopping Bridge
-version: "0.1.9"
+name: Supermarket Bridge
+version: "0.1.10"
 slug: shopping_bridge
 description: Bridge Home Assistant todo shopping items into a Sainsbury's basket
 url: "https://github.com/geftactics/shopping_bridge"
@@ -20,8 +20,7 @@ options:
   sainsburys_password: ""
   sainsburys_session_json: ""
   sainsburys_store_number: "0560"
-  auto_complete_todo: false
-  use_favourites: false
+  auto_complete_todo: true
   poll_interval_seconds: 30
   failed_retry_seconds: 900
   preferred_products:
@@ -43,7 +42,6 @@ schema:
   sainsburys_session_json: password?
   sainsburys_store_number: str
   auto_complete_todo: bool
-  use_favourites: bool
   poll_interval_seconds: int
   failed_retry_seconds: int
   preferred_products:
