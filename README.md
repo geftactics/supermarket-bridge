@@ -19,7 +19,6 @@ Install the `Supermarket Bridge` add-on, then configure:
 todo_entity: todo.shopping_list
 sainsburys_email: ""
 sainsburys_password: ""
-sainsburys_store_number: "0560"
 auto_complete_todo: true
 poll_interval_seconds: 30
 failed_retry_seconds: 900
@@ -40,8 +39,9 @@ At startup the add-on:
   credentials are invalid
 - starts polling after startup checks pass
 
-When a Sainsbury's session expires, the add-on logs in again under Xvfb and
-retries the basket operation once.
+After startup, the add-on reuses the saved Sainsbury's session. When that
+session expires or is rejected, it logs in again under Xvfb and retries the
+basket operation once.
 
 Logs are timestamped, redact credentials, and use plain messages such as:
 

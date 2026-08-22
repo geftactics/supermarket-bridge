@@ -9,7 +9,6 @@ items to a Sainsbury's basket. It does not automate checkout.
 todo_entity: todo.shopping_list
 sainsburys_email: ""
 sainsburys_password: ""
-sainsburys_store_number: "0560"
 auto_complete_todo: true
 poll_interval_seconds: 30
 failed_retry_seconds: 900
@@ -36,7 +35,8 @@ Playwright under Xvfb, and only starts polling after those checks pass. Invalid
 Home Assistant access, a missing todo entity, or bad Sainsbury's credentials
 cause the add-on to exit so the failure is visible in Home Assistant.
 
-When the Sainsbury's session expires, the add-on logs in again under Xvfb and
-retries the basket operation once.
+After startup, the add-on reuses the saved Sainsbury's session. When that
+session expires or is rejected, it logs in again under Xvfb and retries the
+basket operation once.
 
 The `/health` endpoint is available on port `8124`.
