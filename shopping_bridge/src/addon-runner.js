@@ -1,5 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { installLogger } = require('./logger');
+
+installLogger();
 
 const optionsFile = '/data/options.json';
 const preferredProductsFile = '/data/preferred-products.json';

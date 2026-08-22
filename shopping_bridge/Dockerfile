@@ -12,7 +12,7 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 COPY package*.json ./
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends xvfb \
+  && apt-get install -y --no-install-recommends xauth xvfb \
   && rm -rf /var/lib/apt/lists/* \
   && npm install --omit=dev \
   && npx playwright install --with-deps chromium

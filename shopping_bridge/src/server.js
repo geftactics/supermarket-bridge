@@ -1,8 +1,11 @@
 const http = require('node:http');
+const { installLogger } = require('./logger');
 const config = require('./config');
 const { getTodoItems } = require('./ha');
 const { processTodoItem } = require('./processor');
 const { SainsburysBasket } = require('./sainsburys');
+
+installLogger();
 
 const basket = new SainsburysBasket(config);
 let pollInProgress = false;
@@ -72,6 +75,7 @@ server.on('error', (error) => {
 });
 
 server.listen(config.port, config.bindHost, () => {
+  console.log('---- shopping-bridge starting ----');
   console.log(`shopping-bridge listening on http://${config.bindHost}:${config.port}`);
   console.log(`dry-run: ${config.dryRun ? 'on' : 'off'}`);
   console.log(`todo entity: ${config.todoEntity}`);

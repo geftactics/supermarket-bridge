@@ -2,6 +2,7 @@ const { execFile } = require('node:child_process');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { promisify } = require('node:util');
+const { clean } = require('./logger');
 
 const execFileAsync = promisify(execFile);
 
@@ -230,7 +231,7 @@ function commandEnv() {
 function commandErrorMessage(error) {
   const stderr = error.stderr ? String(error.stderr).trim() : '';
   const stdout = error.stdout ? String(error.stdout).trim() : '';
-  return [stderr, stdout, error.message].filter(Boolean).join('\n');
+  return clean([stderr, stdout, error.message].filter(Boolean).join('\n'));
 }
 
 function isAuthFailure(message) {
