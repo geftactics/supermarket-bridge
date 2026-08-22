@@ -5,6 +5,7 @@ const { promisify } = require('node:util');
 const { clean } = require('./logger');
 
 const execFileAsync = promisify(execFile);
+const AUTH_RETRY_SECONDS = 90;
 
 function productSummary(product) {
   if (!product) return null;
@@ -35,7 +36,7 @@ class SainsburysBasket {
     try {
       return await this.execSupermarket(args, options);
     } catch (error) {
-      const message = commandErrorMessage(error);
+      const message = this.commandErrorMessage(error);
       if (options.retriedAuth || !isAuthFailure(message) || !hasCredentials()) {
         throw new Error(message);
       }
@@ -57,6 +58,7 @@ class SainsburysBasket {
   }
 
   async loginWithVirtualDisplay() {
+    await this.assertAuthRetryAllowed();
     const args = [
       '-a',
       this.bin,
@@ -68,12 +70,20 @@ class SainsburysBasket {
       '--password',
       process.env.SUPERMARKET_PASSWORD || process.env.SAINSBURYS_PASSWORD
     ];
-    await execFileAsync('xvfb-run', args, {
-      cwd: process.cwd(),
-      timeout: 90000,
-      maxBuffer: 1024 * 1024 * 5,
-      env: commandEnv()
-    });
+    try {
+      await execFileAsync('xvfb-run', args, {
+        cwd: process.cwd(),
+        timeout: 90000,
+        maxBuffer: 1024 * 1024 * 5,
+        env: commandEnv()
+      });
+    } catch (error) {
+      const message = this.commandErrorMessage(error);
+      await this.recordAuthFailure(message);
+      throw new Error(message);
+    }
+
+    await this.clearAuthFailure();
     console.log("Sainsbury's login completed with xvfb");
   }
 
@@ -83,6 +93,60 @@ class SainsburysBasket {
     }
     console.log("Logging in to Sainsbury's with xvfb");
     await this.loginWithVirtualDisplay();
+  }
+
+  async assertAuthRetryAllowed() {
+    const state = await this.readAuthState();
+    const retryAfter = Date.parse(state?.retryAfter || '');
+    if (Number.isFinite(retryAfter) && retryAfter > Date.now()) {
+      throw new Error(`Sainsbury's auth retry delayed until ${state.retryAfter}`);
+    }
+  }
+
+  async readAuthState() {
+    try {
+      return JSON.parse(await fs.readFile(this.config.authStateFile, 'utf8'));
+    } catch (error) {
+      if (error.code === 'ENOENT') return {};
+      throw error;
+    }
+  }
+
+  async recordAuthFailure(reason) {
+    const retryAfter = new Date(Date.now() + AUTH_RETRY_SECONDS * 1000).toISOString();
+    await fs.mkdir(path.dirname(this.config.authStateFile), { recursive: true });
+    await fs.writeFile(
+      this.config.authStateFile,
+      `${JSON.stringify({
+        status: 'failed',
+        retryAfter,
+        reason: firstLine(reason),
+        updatedAt: new Date().toISOString()
+      }, null, 2)}\n`
+    );
+  }
+
+  async clearAuthFailure() {
+    try {
+      await fs.unlink(this.config.authStateFile);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
+
+  commandErrorMessage(error) {
+    const stderr = error.stderr ? String(error.stderr).trim() : '';
+    const stdout = error.stdout ? String(error.stdout).trim() : '';
+    const message = clean([stderr, stdout, error.message].filter(Boolean).join('\n'));
+    if (this.config.verboseLogs) return message;
+
+    const lines = message.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const useful = lines.find((line) =>
+      /HTTP 401|Not authenticated|session rejected|Failed to|Timeout|xauth|error/i.test(line) &&
+      !/--email|--password/i.test(line)
+    );
+
+    return useful ? `supermarket command failed: ${useful}` : 'supermarket command failed';
   }
 
   async runJson(args) {
@@ -226,12 +290,6 @@ function commandEnv() {
     SUPERMARKET_EMAIL: process.env.SUPERMARKET_EMAIL || process.env.SAINSBURYS_EMAIL,
     SUPERMARKET_PASSWORD: process.env.SUPERMARKET_PASSWORD || process.env.SAINSBURYS_PASSWORD
   };
-}
-
-function commandErrorMessage(error) {
-  const stderr = error.stderr ? String(error.stderr).trim() : '';
-  const stdout = error.stdout ? String(error.stdout).trim() : '';
-  return clean([stderr, stdout, error.message].filter(Boolean).join('\n'));
 }
 
 function isAuthFailure(message) {

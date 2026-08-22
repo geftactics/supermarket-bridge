@@ -22,6 +22,7 @@ sainsburys_password: ""
 auto_complete_todo: true
 poll_interval_seconds: 30
 failed_retry_seconds: 900
+verbose_logs: false
 preferred_products:
   - term: bananas
     product_ids:
@@ -43,6 +44,12 @@ After startup, the add-on reuses the saved Sainsbury's session. When that
 session expires or is rejected, it logs in again under Xvfb and retries the
 basket operation once.
 
+Failed Sainsbury's auth is rate limited to one login attempt every 90 seconds,
+persisted in `/data/auth-state.json`, so a bad password or restart loop does
+not repeatedly hit Sainsbury's. `verbose_logs` defaults to `false`; set it to
+`true` only when you need detailed Playwright/open-supermarkets output for
+debugging.
+
 Logs are timestamped, redact credentials, and use plain messages such as:
 
 ```text
@@ -53,8 +60,9 @@ Logs are timestamped, redact credentials, and use plain messages such as:
 ```
 
 Processed item state is stored in `/data/state.json`. Preferred product config
-is written to `/data/preferred-products.json`. Sainsbury's session data is kept
-under `/data/.sainsburys/`.
+is written to `/data/preferred-products.json`. Auth retry state is stored in
+`/data/auth-state.json`. Sainsbury's session data is kept under
+`/data/.sainsburys/`.
 
 The todo entity is entered as text, for example `todo.shopping_list`. Home
 Assistant add-on options do not provide a dynamic entity picker; the add-on

@@ -12,6 +12,7 @@ sainsburys_password: ""
 auto_complete_todo: true
 poll_interval_seconds: 30
 failed_retry_seconds: 900
+verbose_logs: false
 preferred_products:
   - term: bananas
     product_ids:
@@ -38,6 +39,12 @@ cause the add-on to exit so the failure is visible in Home Assistant.
 After startup, the add-on reuses the saved Sainsbury's session. When that
 session expires or is rejected, it logs in again under Xvfb and retries the
 basket operation once.
+
+Failed Sainsbury's auth is rate limited to one login attempt every 90 seconds,
+persisted in `/data/auth-state.json`, so a bad password or restart loop does
+not repeatedly hit Sainsbury's. `verbose_logs` defaults to `false`; set it to
+`true` only when you need detailed Playwright/open-supermarkets output for
+debugging.
 
 The `/health` endpoint is available on port `8124`.
 

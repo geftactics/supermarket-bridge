@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.15
+
+- Add `verbose_logs`, defaulting to `false`, to keep Playwright and
+  open-supermarkets command output quiet unless diagnostics are needed.
+- Add persistent Sainsbury's auth retry limiting: one login attempt every 90
+  seconds.
+
 ## 0.1.14
 
 - Remove the manual Sainsbury's session JSON option. The add-on logs in at
