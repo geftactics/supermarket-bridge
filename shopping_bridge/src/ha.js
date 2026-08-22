@@ -33,6 +33,10 @@ async function getTodoItems(config, status = 'needs_action') {
   return body?.service_response?.[config.todoEntity]?.items || [];
 }
 
+async function getEntityState(config, entityId) {
+  return haFetch(config, `/api/states/${encodeURIComponent(entityId)}`);
+}
+
 async function completeTodoItem(config, item) {
   await haFetch(config, '/api/services/todo/update_item', {
     method: 'POST',
@@ -46,5 +50,6 @@ async function completeTodoItem(config, item) {
 
 module.exports = {
   getTodoItems,
+  getEntityState,
   completeTodoItem
 };

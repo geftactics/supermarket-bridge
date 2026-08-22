@@ -16,7 +16,6 @@ function boolString(value, defaultValue) {
 if (fs.existsSync(optionsFile)) {
   const options = JSON.parse(fs.readFileSync(optionsFile, 'utf8'));
 
-  process.env.BRIDGE_DRY_RUN = boolString(options.bridge_dry_run, true);
   process.env.TODO_ENTITY = options.todo_entity || 'todo.shopping_list';
   process.env.HA_URL = options.ha_url || process.env.HA_URL || '';
   process.env.HA_TOKEN = options.ha_token || process.env.HA_TOKEN || '';

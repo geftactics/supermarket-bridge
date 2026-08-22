@@ -40,7 +40,7 @@ class SainsburysBasket {
         throw new Error(message);
       }
 
-      console.warn("Sainsbury's auth failed; attempting headed login under xvfb");
+      console.warn("Sainsbury's auth expired or was rejected; logging in with xvfb");
       await this.loginWithVirtualDisplay();
       return this.run(args, { ...options, retriedAuth: true });
     }
@@ -74,7 +74,15 @@ class SainsburysBasket {
       maxBuffer: 1024 * 1024 * 5,
       env: commandEnv()
     });
-    console.warn("Sainsbury's xvfb login completed");
+    console.log("Sainsbury's login completed with xvfb");
+  }
+
+  async ensureAuthenticated() {
+    if (!hasCredentials()) {
+      throw new Error("Sainsbury's email and password are required");
+    }
+    console.log("Logging in to Sainsbury's with xvfb");
+    await this.loginWithVirtualDisplay();
   }
 
   async runJson(args) {
@@ -89,10 +97,6 @@ class SainsburysBasket {
       if (error.code === 'ENOENT') return {};
       throw error;
     }
-  }
-
-  async status() {
-    return this.runJson(['--provider', 'sainsburys', 'status', '--json']);
   }
 
   async findProduct(query) {
@@ -185,10 +189,6 @@ class SainsburysBasket {
   }
 
   async addProduct(product, quantity) {
-    if (this.config.dryRun) {
-      return { dryRun: true };
-    }
-
     await this.run([
       '--provider',
       'sainsburys',
@@ -197,7 +197,7 @@ class SainsburysBasket {
       '--qty',
       String(quantity)
     ]);
-    return { dryRun: false };
+    return {};
   }
 }
 

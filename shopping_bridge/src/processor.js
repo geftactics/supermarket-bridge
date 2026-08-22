@@ -12,7 +12,6 @@ async function processTodoItem(config, basket, item) {
   const previousStatus = previous?.status;
   if (
     previousStatus === 'added' ||
-    (config.dryRun && previousStatus === 'dry_run') ||
     shouldDelayFailedRetry(config, previous)
   ) {
     return {
@@ -25,10 +24,9 @@ async function processTodoItem(config, basket, item) {
 
   const parsed = parseShoppingText(item.summary);
   let match;
-  let addResult;
   try {
     match = await basket.findProduct(parsed.query);
-    addResult = await basket.addProduct(match.product, parsed.quantity);
+    await basket.addProduct(match.product, parsed.quantity);
   } catch (error) {
     await markProcessed(config.stateFile, uid, {
       uid,
@@ -43,21 +41,20 @@ async function processTodoItem(config, basket, item) {
 
   const record = await markProcessed(config.stateFile, uid, {
     uid,
-    status: addResult.dryRun ? 'dry_run' : 'added',
+    status: 'added',
     summary: item.summary,
     parsed,
     selectedFrom: match.source,
     product: productSummary(match.product)
   });
 
-  if (!addResult.dryRun && config.autoCompleteTodo) {
+  if (config.autoCompleteTodo) {
     await completeTodoItem(config, uid);
   }
 
   return {
     skipped: false,
     uid,
-    dryRun: addResult.dryRun,
     selectedFrom: match.source,
     parsed,
     product: productSummary(match.product),
@@ -67,12 +64,11 @@ async function processTodoItem(config, basket, item) {
 }
 
 function shouldDelayFailedRetry(config, previous) {
-  if (config.dryRun || previous?.status !== 'failed' || !previous.retryAfter) return false;
+  if (previous?.status !== 'failed' || !previous.retryAfter) return false;
   return new Date(previous.retryAfter).getTime() > Date.now();
 }
 
 function skipReason(status) {
-  if (status === 'dry_run') return 'already_dry_run';
   if (status === 'failed') return 'failed_retry_delayed';
   return 'already_processed';
 }

@@ -1,23 +1,6 @@
 const path = require('node:path');
-const fs = require('node:fs');
 
 const root = path.resolve(__dirname, '..');
-
-function loadDotEnv(file) {
-  if (!fs.existsSync(file)) return;
-  const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    const index = trimmed.indexOf('=');
-    if (index === -1) continue;
-    const key = trimmed.slice(0, index).trim();
-    const value = trimmed.slice(index + 1).trim().replace(/^['"]|['"]$/g, '');
-    if (key && process.env[key] == null) process.env[key] = value;
-  }
-}
-
-loadDotEnv(path.resolve(root, '.env'));
 
 function boolEnv(name, defaultValue) {
   const value = process.env[name];
@@ -33,7 +16,6 @@ function intEnv(name, defaultValue) {
 module.exports = {
   port: intEnv('PORT', 8124),
   bindHost: process.env.BIND_HOST || '127.0.0.1',
-  dryRun: boolEnv('BRIDGE_DRY_RUN', true),
   autoCompleteTodo: boolEnv('AUTO_COMPLETE_TODO', false),
   useFavourites: boolEnv('USE_FAVOURITES', false),
   haUrl: process.env.HA_URL || '',

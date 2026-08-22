@@ -5,11 +5,7 @@
   "description": "Bridge Home Assistant todo shopping items into a Sainsbury's basket.",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "test:item": "node src/cli.js item",
-    "test:ha": "node src/cli.js ha-sync",
-    "status": "node src/cli.js status",
-    "login:sainsburys": "supermarket --provider sainsburys login"
+    "start": "node src/server.js"
   },
   "dependencies": {
     "open-supermarkets": "^3.0.0"

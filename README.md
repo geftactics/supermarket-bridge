@@ -1,130 +1,58 @@
 # shopping-bridge
 
-This repository can be used two ways:
+Home Assistant add-on repository for Shopping Bridge.
 
-- Run the bridge locally from the repository root while developing.
-- Add it to Home Assistant as a custom App repository; the installable App is in
-  `shopping_bridge/`.
+Shopping Bridge polls a Home Assistant todo shopping list and adds matching
+items to a Sainsbury's basket. It does not automate checkout.
 
-Local bridge from a Home Assistant todo shopping list to a Sainsbury's basket.
+## Install
 
-The bridge is designed so it can run locally now and later be packaged as a Home
-Assistant App. It keeps supermarket session/state outside Home Assistant.
+Add this repository to the Home Assistant add-on store:
 
-## Local setup
-
-```bash
-npm install
-npx playwright install chromium
-cp .env.example .env
+```text
+https://github.com/geftactics/shopping_bridge
 ```
 
-Log in to Sainsbury's once:
-
-```bash
-npm run login:sainsburys -- --email you@example.com --password 'your-password'
-```
-
-The Sainsbury's session is saved by `open-supermarkets` in
-`~/.sainsburys/session.json`. Keep that directory persistent when this becomes
-a Home Assistant App.
-
-## Safe local test
-
-Dry-run is on by default, so this will pick a product but will not add to basket:
-
-```bash
-npm run test:item -- "Bananas"
-```
-
-To test against your HA todo list:
-
-```bash
-HA_URL=http://homeassistant.local:8123 HA_TOKEN=... npm run test:ha
-```
-
-To actually add to basket:
-
-```bash
-BRIDGE_DRY_RUN=false npm run test:item -- "Bananas"
-```
-
-## Preferred products
-
-Create `config/preferred-products.json` to force common shopping-list terms to
-specific Sainsbury's product IDs before favourites/search:
-
-```json
-{
-  "bananas": ["7430790", "1196757"],
-  "bacon": ["8123900", "8123902", "7640075"]
-}
-```
-
-The bridge tries IDs in order and uses the first in-stock product. If no
-preferred product is usable, it falls back to favourites and then search.
-
-## Run the webhook server
-
-```bash
-npm start
-```
-
-Then POST:
-
-```bash
-curl -X POST http://127.0.0.1:8124/ha/todo-added \
-  -H 'content-type: application/json' \
-  -d '{"uid":"manual-bananas","summary":"Bananas"}'
-```
-
-## Home Assistant App polling
-
-In the Home Assistant App, set:
+Install the `Shopping Bridge` add-on, then configure:
 
 ```yaml
 todo_entity: todo.shopping_list
+sainsburys_email: ""
+sainsburys_password: ""
+sainsburys_store_number: "0560"
+auto_complete_todo: false
+use_favourites: false
 poll_interval_seconds: 30
+failed_retry_seconds: 900
+preferred_products:
+  - term: bananas
+    product_ids:
+      - "7430790"
+      - "1196757"
 ```
 
-The App polls incomplete todo items, records processed UIDs in `/data/state.json`,
-and logs `todo processed`, `todo skipped`, or `todo poll failed`. Set
-`poll_interval_seconds: 0` to disable polling and use the webhook endpoint only.
+## Runtime
 
-`use_favourites` controls whether the bridge calls Sainsbury's authenticated
-favourites endpoint before normal search. Leave it `false` until the App has a
-valid Sainsbury's session; preferred products still run first either way.
+At startup the add-on:
 
-If headless Sainsbury's login fails inside the App, paste a known-good
-`~/.sainsburys/session.json` from a successful local `supermarket login` into
-the `sainsburys_session_json` App option. The App writes it to
-`/data/.sainsburys/session.json`.
+- validates that the configured todo entity exists and is a `todo.*` entity
+- logs in to Sainsbury's using Playwright under Xvfb
+- exits immediately if Home Assistant access, the todo entity, or Sainsbury's
+  credentials are invalid
+- starts polling after startup checks pass
 
-## App packaging notes
+When a Sainsbury's session expires, the add-on logs in again under Xvfb and
+retries the basket operation once.
 
-The runtime needs:
+Logs are timestamped, redact credentials, and use plain messages such as:
 
-- Node 18+
-- Chromium installed for Playwright login
-- persistent `/data` for bridge state
-- persistent Sainsbury's session storage, ideally mapped to the app user's home
-- env vars or app options for `HA_URL`, `HA_TOKEN`, and Sainsbury's credentials
+```text
+2026-08-22T09:39:48.967Z ---- shopping-bridge starting ----
+2026-08-22T09:39:51.204Z Polling todo entity 'todo.shopping_list' every 30s.
+2026-08-22T09:40:22.811Z Added Bananas -> Sainsbury's Fairtrade Bananas x5 [preferred]
+2026-08-22T09:40:52.112Z Skipped Marmite: retry delayed until 2026-08-22T09:55:52.112Z.
+```
 
-Do not automate checkout. This bridge only adds items to the basket.
-
-## Home Assistant App
-
-This repository root is also shaped as a local Home Assistant App folder:
-
-- `config.yaml` defines App options.
-- `Dockerfile` builds the Node/Playwright runtime.
-- `src/addon-runner.js` reads `/data/options.json` and starts the bridge.
-
-For the App runtime, `/data` is persistent and used for:
-
-- `/data/state.json`
-- `/data/preferred-products.json`
-- `/data/.sainsburys/session.json`
-
-The service listens on port `8124` inside the App. Polling uses Home Assistant's
-internal API; no separate long-lived HA token is needed when installed as an App.
+Processed item state is stored in `/data/state.json`. Preferred product config
+is written to `/data/preferred-products.json`. Sainsbury's session data is kept
+under `/data/.sainsburys/`.
