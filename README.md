@@ -10,7 +10,7 @@ items to a Sainsbury's basket. It does not automate checkout.
 Add this repository to the Home Assistant add-on store:
 
 ```text
-https://github.com/geftactics/shopping_bridge
+https://github.com/geftactics/supermarket-bridge
 ```
 
 Install the `Supermarket Bridge` add-on, then configure:

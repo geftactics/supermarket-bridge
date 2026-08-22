@@ -1,6 +1,6 @@
-# Shopping Bridge Apps
+# Supermarket Bridge Apps
 
-Home Assistant App repository for Shopping Bridge.
+Home Assistant App repository for Supermarket Bridge.
 
 ## Install
 
@@ -10,7 +10,7 @@ In Home Assistant:
 2. Open the three-dot menu.
 3. Choose **Repositories**.
 4. Add this repository URL.
-5. Install **Shopping Bridge**.
+5. Install **Supermarket Bridge**.
 
 The App listens on port `8124` and stores its state and Sainsbury's session in
 the App's persistent `/data` directory.
