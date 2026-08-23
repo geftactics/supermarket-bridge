@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.17
+
+- Search within Sainsbury's favourites using `fav-search` instead of only
+  checking the first favourites page.
+- Allow shopping-list terms to match inside favourite product words, for
+  example `noodles` matching `noodlesoup`.
+- Ignore unavailable favourite matches and fall back to search.
+
 ## 0.1.16
 
 - Make favourites matching stricter by requiring all shopping-list terms to

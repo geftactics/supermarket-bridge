@@ -173,7 +173,8 @@ class SainsburysBasket {
         const result = await this.runJson([
           '--provider',
           'sainsburys',
-          'favourites',
+          'fav-search',
+          query,
           '--limit',
           String(this.config.favouritesLimit),
           '--json'
@@ -185,7 +186,7 @@ class SainsburysBasket {
         console.warn(`favourites lookup failed, falling back to search: ${firstLine(error.message)}`);
       }
 
-      const favourite = chooseInStock(favourites);
+      const favourite = favourites.find((product) => product.in_stock);
       if (favourite) {
         return {
           source: 'favourites',
@@ -194,7 +195,11 @@ class SainsburysBasket {
         };
       }
 
-      console.log(`No favourite matched ${query}; using search`);
+      if (favourites.length > 0) {
+        console.log(`Favourite matches for ${query} are unavailable; using search`);
+      } else {
+        console.log(`No favourite matched ${query}; using search`);
+      }
     }
 
     const searchResult = await this.runJson([
@@ -283,7 +288,14 @@ function productMatchesAllTerms(product, query) {
   if (terms.length === 0) return false;
 
   const tokens = productTokens(product);
-  return terms.every((term) => tokens.has(term));
+  return terms.every((term) => tokenMatches(tokens, term));
+}
+
+function tokenMatches(tokens, term) {
+  for (const token of tokens) {
+    if (token === term || token.includes(term)) return true;
+  }
+  return false;
 }
 
 function productTokens(product) {

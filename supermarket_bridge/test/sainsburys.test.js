@@ -25,4 +25,14 @@ assert.equal(
   true
 );
 
+assert.equal(
+  productMatchesAllTerms(product('Nissin Demae Ramen Spicy Japanese Noodlesoup 100g'), 'spicy noodles'),
+  true
+);
+
+assert.equal(
+  productMatchesAllTerms(product('Seabrook Crinkle Cut Crisps Sea Salt & Vinegar 6x25g'), 'salt vinegar crisps'),
+  true
+);
+
 console.log('sainsburys matcher tests passed');
