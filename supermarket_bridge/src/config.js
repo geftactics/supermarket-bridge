@@ -1,4 +1,5 @@
 const path = require('node:path');
+const packageJson = require('../package.json');
 
 const root = path.resolve(__dirname, '..');
 
@@ -14,6 +15,7 @@ function intEnv(name, defaultValue) {
 }
 
 module.exports = {
+  appVersion: packageJson.version,
   port: intEnv('PORT', 8124),
   bindHost: process.env.BIND_HOST || '127.0.0.1',
   autoCompleteTodo: boolEnv('AUTO_COMPLETE_TODO', true),

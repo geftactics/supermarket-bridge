@@ -9,6 +9,7 @@ installLogger();
 
 const basket = new SainsburysBasket(config);
 let pollInProgress = false;
+const loggedSkips = new Set();
 
 function json(res, status, body) {
   res.writeHead(status, { 'content-type': 'application/json' });
@@ -49,7 +50,7 @@ start().catch((error) => {
 
 async function start() {
   process.stdout.write('\n');
-  console.log('---- supermarket-bridge starting ----');
+  console.log(`---- supermarket-bridge ${config.appVersion} starting ----`);
   await validateStartup();
   await basket.ensureAuthenticated();
 
@@ -89,7 +90,7 @@ async function pollTodoList() {
     for (const item of items) {
       const result = await processTodoItem(config, basket, item);
       if (result.skipped) {
-        console.log(skipLogLine(item, result));
+        logSkippedItem(item, result);
       } else {
         console.log(
           `Added '${item.summary}' -> '${result.product?.name || 'unknown'}' ` +
@@ -102,6 +103,17 @@ async function pollTodoList() {
   } finally {
     pollInProgress = false;
   }
+}
+
+function logSkippedItem(item, result) {
+  const key = [
+    result.uid || item.uid || item.id || item.summary,
+    result.reason,
+    result.previous?.retryAfter || ''
+  ].join('|');
+  if (loggedSkips.has(key)) return;
+  loggedSkips.add(key);
+  console.log(skipLogLine(item, result));
 }
 
 function skipLogLine(item, result) {

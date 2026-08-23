@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.21
+
+- Include the add-on version in the startup log banner.
+- Suppress repeated skip logs for already processed or retry-delayed todo items
+  during the same app run.
+
 ## 0.1.20
 
 - Change the add-on icon background to orange.

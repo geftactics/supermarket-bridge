@@ -1,5 +1,5 @@
 name: Supermarket Bridge
-version: "0.1.20"
+version: "0.1.21"
 slug: supermarket_bridge
 description: Bridge Alexa/Home Assistant shopping list items into a Sainsbury's basket
 url: "https://github.com/geftactics/supermarket-bridge"
