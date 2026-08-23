@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Supermarket trolley">
-  <rect width="256" height="256" rx="48" fill="#1f6f5b"/>
+  <rect width="256" height="256" rx="48" fill="#f47b20"/>
   <path d="M58 62h24l21 101h84" fill="none" stroke="#f8f7f1" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M96 86h111l-16 56H108z" fill="none" stroke="#f8f7f1" stroke-width="14" stroke-linejoin="round"/>
   <path d="M111 107h82M118 126h68M132 88l9 53M171 88l-9 53" fill="none" stroke="#f8f7f1" stroke-width="8" stroke-linecap="round"/>
   <circle cx="118" cy="190" r="15" fill="#f8f7f1"/>
   <circle cx="184" cy="190" r="15" fill="#f8f7f1"/>
-  <circle cx="118" cy="190" r="6" fill="#1f6f5b"/>
-  <circle cx="184" cy="190" r="6" fill="#1f6f5b"/>
+  <circle cx="118" cy="190" r="6" fill="#f47b20"/>
+  <circle cx="184" cy="190" r="6" fill="#f47b20"/>
 </svg>

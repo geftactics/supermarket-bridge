@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.20
+
+- Change the add-on icon background to orange.
+- Trim the root README runtime logging example.
+
 ## 0.1.19
 
 - Fix Docker build after removing the preferred-products config directory.

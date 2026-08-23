@@ -34,12 +34,3 @@ verbose_logs: false
 
 Sainsbury's favourites are checked before normal search. If the app cannot find
 a suitable favourite, it falls back to normal Sainsbury's search.
-
-Logs are timestamped, redact credentials, and use plain messages such as:
-
-```text
-2026-08-23T09:39:48.967Z ---- supermarket-bridge starting ----
-2026-08-23T09:39:51.204Z Polling todo entity 'todo.shopping_list' every 30s.
-2026-08-23T09:40:22.811Z Added 'Salt vinegar crisps' -> 'Walkers Squares Salt & Vinegar Multipack CrispsSnacks 6x22g' [search]
-2026-08-23T09:40:52.112Z Skipped 'Marmite': retry delayed until 2026-08-23T09:55:52.112Z.
-```
