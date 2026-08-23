@@ -22,10 +22,6 @@ function chooseInStock(products) {
   return products.find((product) => product.in_stock) || products[0] || null;
 }
 
-function normalizeTerm(value) {
-  return String(value || '').trim().toLowerCase();
-}
-
 class SainsburysBasket {
   constructor(config) {
     this.config = config;
@@ -41,7 +37,6 @@ class SainsburysBasket {
         throw new Error(message);
       }
 
-      console.warn("Sainsbury's auth expired or was rejected; logging in with xvfb");
       await this.loginWithVirtualDisplay();
       return this.run(args, { ...options, retriedAuth: true });
     }
@@ -84,14 +79,13 @@ class SainsburysBasket {
     }
 
     await this.clearAuthFailure();
-    console.log("Sainsbury's login completed with xvfb");
+    console.log("Sainsbury's login completed");
   }
 
   async ensureAuthenticated() {
     if (!hasCredentials()) {
       throw new Error("Sainsbury's email and password are required");
     }
-    console.log("Logging in to Sainsbury's with xvfb");
     await this.loginWithVirtualDisplay();
   }
 
@@ -154,19 +148,7 @@ class SainsburysBasket {
     return JSON.parse(stdout);
   }
 
-  async loadPreferredProducts() {
-    try {
-      return JSON.parse(await fs.readFile(this.config.preferredProductsFile, 'utf8'));
-    } catch (error) {
-      if (error.code === 'ENOENT') return {};
-      throw error;
-    }
-  }
-
   async findProduct(query) {
-    const preferred = await this.findPreferredProduct(query);
-    if (preferred) return preferred;
-
     if (this.config.useFavourites) {
       let favourites = [];
       try {
@@ -221,41 +203,6 @@ class SainsburysBasket {
       source: 'search',
       product,
       candidates: results.map(productSummary)
-    };
-  }
-
-  async findPreferredProduct(query) {
-    const preferences = await this.loadPreferredProducts();
-    const ids = preferences[normalizeTerm(query)];
-    const productIds = Array.isArray(ids) ? ids : ids ? [ids] : [];
-
-    if (productIds.length === 0) return null;
-
-    const searchResult = await this.runJson([
-      '--provider',
-      'sainsburys',
-      'search',
-      query,
-      '--limit',
-      String(Math.max(this.config.searchLimit, productIds.length)),
-      '--json'
-    ]);
-    const candidates = searchResult.products || [];
-    const preferredProducts = productIds.map((productId) => {
-      const product = candidates.find((candidate) => candidate.product_uid === String(productId));
-      return product || {
-        product_uid: String(productId),
-        name: `Preferred product ${productId}`,
-        in_stock: true,
-        retail_price: {}
-      };
-    });
-
-    const product = chooseInStock(preferredProducts);
-    return {
-      source: 'preferred',
-      product,
-      candidates: preferredProducts.map(productSummary)
     };
   }
 

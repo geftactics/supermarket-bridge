@@ -1,6 +1,8 @@
 # Supermarket Bridge Apps
 
-Home Assistant App repository for Supermarket Bridge.
+Home Assistant App repository for Supermarket Bridge, which can bridge a Home
+Assistant todo shopping list into a Sainsbury's basket. It pairs well with Home
+Assistant's built-in Alexa integration for Alexa shopping lists.
 
 ## Install
 
@@ -12,5 +14,4 @@ In Home Assistant:
 4. Add this repository URL.
 5. Install **Supermarket Bridge**.
 
-The App listens on port `8124` and stores its state and Sainsbury's session in
-the App's persistent `/data` directory.
+Only Sainsbury's has been tested.

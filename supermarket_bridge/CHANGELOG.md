@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.18
+
+- Simplify logs and remove `xvfb` from normal log messages.
+- Quote shopping-list item and product names in add logs.
+- Remove preferred products from configuration and runtime matching.
+- Simplify Home Assistant add-on text around the Alexa shopping-list bridge use
+  case.
+
 ## 0.1.17
 
 - Search within Sainsbury's favourites using `fav-search` instead of only

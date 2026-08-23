@@ -48,6 +48,7 @@ start().catch((error) => {
 });
 
 async function start() {
+  process.stdout.write('\n');
   console.log('---- supermarket-bridge starting ----');
   await validateStartup();
   await basket.ensureAuthenticated();
@@ -91,7 +92,7 @@ async function pollTodoList() {
         console.log(skipLogLine(item, result));
       } else {
         console.log(
-          `Added ${item.summary} -> ${result.product?.name || 'unknown'} ` +
+          `Added '${item.summary}' -> '${result.product?.name || 'unknown'}' ` +
           `[${result.selectedFrom}]`
         );
       }
@@ -105,10 +106,10 @@ async function pollTodoList() {
 
 function skipLogLine(item, result) {
   if (result.reason === 'failed_retry_delayed') {
-    return `Skipped ${item.summary}: retry delayed until ${result.previous?.retryAfter || 'later'}.`;
+    return `Skipped '${item.summary}': retry delayed until ${result.previous?.retryAfter || 'later'}.`;
   }
   if (result.reason === 'already_processed') {
-    return `Skipped ${item.summary}: already added.`;
+    return `Skipped '${item.summary}': already added.`;
   }
-  return `Skipped ${item.summary}: ${result.reason}.`;
+  return `Skipped '${item.summary}': ${result.reason}.`;
 }

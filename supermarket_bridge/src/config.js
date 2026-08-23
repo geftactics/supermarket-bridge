@@ -26,10 +26,6 @@ module.exports = {
   verboseLogs: boolEnv('VERBOSE_LOGS', false),
   stateFile: path.resolve(root, process.env.STATE_FILE || './data/state.json'),
   authStateFile: path.resolve(root, process.env.AUTH_STATE_FILE || './data/auth-state.json'),
-  preferredProductsFile: path.resolve(
-    root,
-    process.env.PREFERRED_PRODUCTS_FILE || './config/preferred-products.json'
-  ),
   favouritesLimit: intEnv('FAVOURITES_LIMIT', 12),
   searchLimit: intEnv('SEARCH_LIMIT', 12)
 };

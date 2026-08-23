@@ -1,11 +1,9 @@
 const fs = require('node:fs');
-const path = require('node:path');
 const { installLogger } = require('./logger');
 
 installLogger();
 
 const optionsFile = '/data/options.json';
-const preferredProductsFile = '/data/preferred-products.json';
 
 function boolString(value, defaultValue) {
   if (value == null) return defaultValue ? 'true' : 'false';
@@ -26,14 +24,6 @@ if (fs.existsSync(optionsFile)) {
   process.env.POLL_INTERVAL_SECONDS = String(options.poll_interval_seconds ?? 30);
   process.env.FAILED_RETRY_SECONDS = String(options.failed_retry_seconds ?? 900);
   process.env.VERBOSE_LOGS = boolString(options.verbose_logs, false);
-
-  if (options.preferred_products) {
-    fs.mkdirSync(path.dirname(preferredProductsFile), { recursive: true });
-    fs.writeFileSync(
-      preferredProductsFile,
-      `${JSON.stringify(normalizePreferredProducts(options.preferred_products), null, 2)}\n`
-    );
-  }
 }
 
 process.env.HOME = process.env.HOME || '/data';
@@ -41,32 +31,7 @@ process.env.HA_URL = process.env.HA_URL || 'http://supervisor/core';
 process.env.HA_TOKEN = process.env.HA_TOKEN || process.env.SUPERVISOR_TOKEN || '';
 process.env.STATE_FILE = process.env.STATE_FILE || '/data/state.json';
 process.env.AUTH_STATE_FILE = process.env.AUTH_STATE_FILE || '/data/auth-state.json';
-process.env.PREFERRED_PRODUCTS_FILE = process.env.PREFERRED_PRODUCTS_FILE || preferredProductsFile;
 process.env.BIND_HOST = process.env.BIND_HOST || '0.0.0.0';
 process.env.PORT = process.env.PORT || '8124';
 
 require('./server');
-
-function normalizePreferredProducts(value) {
-  if (Array.isArray(value)) {
-    return Object.fromEntries(
-      value
-        .filter((entry) => entry?.term)
-        .map((entry) => [
-          String(entry.term).trim().toLowerCase(),
-          Array.isArray(entry.product_ids)
-            ? entry.product_ids.map(String)
-            : entry.product_ids
-              ? [String(entry.product_ids)]
-              : []
-        ])
-    );
-  }
-
-  return Object.fromEntries(
-    Object.entries(value).map(([key, ids]) => [
-      key.trim().toLowerCase(),
-      Array.isArray(ids) ? ids.map(String) : [String(ids)]
-    ])
-  );
-}
