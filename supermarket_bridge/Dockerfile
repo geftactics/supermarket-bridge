@@ -17,7 +17,6 @@ RUN apt-get update \
   && npx playwright install --with-deps chromium
 
 COPY src ./src
-COPY config ./config
 COPY README.md ./
 
 VOLUME ["/data"]

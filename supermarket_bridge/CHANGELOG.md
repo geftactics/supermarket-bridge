@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.19
+
+- Fix Docker build after removing the preferred-products config directory.
+
 ## 0.1.18
 
 - Simplify logs and remove `xvfb` from normal log messages.
