@@ -179,7 +179,7 @@ class SainsburysBasket {
           '--json'
         ]);
         favourites = (result.products || []).filter((product) =>
-          productScore(product, query) > 0
+          productMatchesAllTerms(product, query)
         ).sort((a, b) => productScore(b, query) - productScore(a, query));
       } catch (error) {
         console.warn(`favourites lookup failed, falling back to search: ${firstLine(error.message)}`);
@@ -193,6 +193,8 @@ class SainsburysBasket {
           candidates: favourites.map(productSummary)
         };
       }
+
+      console.log(`No favourite matched ${query}; using search`);
     }
 
     const searchResult = await this.runJson([
@@ -276,6 +278,36 @@ function productScore(product, query) {
   }, 0);
 }
 
+function productMatchesAllTerms(product, query) {
+  const terms = queryTerms(query);
+  if (terms.length === 0) return false;
+
+  const tokens = productTokens(product);
+  return terms.every((term) => tokens.has(term));
+}
+
+function productTokens(product) {
+  const haystack = `${product.name || ''} ${product.description || ''}`.toLowerCase();
+  const tokens = haystack.match(/[a-z0-9]+/g) || [];
+  return new Set(tokens.map(normalizeToken));
+}
+
+function queryTerms(query) {
+  return (String(query || '').toLowerCase().match(/[a-z0-9]+/g) || [])
+    .map(normalizeToken)
+    .filter((term) => term.length > 1 && !STOP_WORDS.has(term));
+}
+
+function normalizeToken(value) {
+  const token = String(value || '').toLowerCase();
+  if (token.length > 3 && token.endsWith('ies')) return `${token.slice(0, -3)}y`;
+  if (token.length > 3 && token.endsWith('es')) return token.slice(0, -2);
+  if (token.length > 3 && token.endsWith('s')) return token.slice(0, -1);
+  return token;
+}
+
+const STOP_WORDS = new Set(['and', 'with', 'the', 'for', 'a', 'an']);
+
 function firstLine(value) {
   return String(value || '').split(/\r?\n/)[0];
 }
@@ -305,5 +337,6 @@ function hasCredentials() {
 
 module.exports = {
   SainsburysBasket,
-  productSummary
+  productSummary,
+  productMatchesAllTerms
 };

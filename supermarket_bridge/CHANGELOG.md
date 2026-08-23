@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.16
+
+- Make favourites matching stricter by requiring all shopping-list terms to
+  match before choosing a favourite.
+- Log when no favourite matches and the add-on falls back to search.
+
 ## 0.1.15
 
 - Add `verbose_logs`, defaulting to `false`, to keep Playwright and
