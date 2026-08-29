@@ -26,7 +26,7 @@ async function processTodoItem(config, basket, item) {
   let match;
   try {
     match = await basket.findProduct(parsed.query);
-    await basket.addProduct(match.product, parsed.quantity);
+    match.product = await addFirstWorkingProduct(basket, match.products || [match.product], parsed.quantity);
   } catch (error) {
     await markProcessed(config.stateFile, uid, {
       uid,
@@ -61,6 +61,25 @@ async function processTodoItem(config, basket, item) {
     candidates: match.candidates,
     record
   };
+}
+
+async function addFirstWorkingProduct(basket, products, quantity) {
+  const candidates = products.filter(Boolean);
+  let lastError;
+
+  for (const [index, product] of candidates.entries()) {
+    try {
+      await basket.addProduct(product, quantity);
+      return product;
+    } catch (error) {
+      lastError = error;
+      if (index < candidates.length - 1) {
+        console.warn(`Failed to add '${product.name || product.product_uid}'; trying next candidate`);
+      }
+    }
+  }
+
+  throw lastError || new Error('No Sainsbury\'s product candidates to add');
 }
 
 function shouldDelayFailedRetry(config, previous) {

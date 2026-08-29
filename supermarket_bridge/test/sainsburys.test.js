@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { productMatchesAllTerms } = require('../src/sainsburys');
+const { addOrder, productMatchesAllTerms } = require('../src/sainsburys');
 
 function product(name) {
   return { name, description: '' };
@@ -33,6 +33,15 @@ assert.equal(
 assert.equal(
   productMatchesAllTerms(product('Seabrook Crinkle Cut Crisps Sea Salt & Vinegar 6x25g'), 'salt vinegar crisps'),
   true
+);
+
+assert.deepEqual(
+  addOrder([
+    { product_uid: '1', in_stock: false },
+    { product_uid: '2', in_stock: true },
+    { product_uid: '3', in_stock: true }
+  ]).map((item) => item.product_uid),
+  ['2', '3', '1']
 );
 
 console.log('sainsburys matcher tests passed');

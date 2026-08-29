@@ -22,6 +22,13 @@ function chooseInStock(products) {
   return products.find((product) => product.in_stock) || products[0] || null;
 }
 
+function addOrder(products) {
+  return [
+    ...products.filter((product) => product.in_stock),
+    ...products.filter((product) => !product.in_stock)
+  ];
+}
+
 class SainsburysBasket {
   constructor(config) {
     this.config = config;
@@ -173,6 +180,7 @@ class SainsburysBasket {
         return {
           source: 'favourites',
           product: favourite,
+          products: addOrder(favourites),
           candidates: favourites.map(productSummary)
         };
       }
@@ -202,6 +210,7 @@ class SainsburysBasket {
     return {
       source: 'search',
       product,
+      products: addOrder(results),
       candidates: results.map(productSummary)
     };
   }
@@ -297,5 +306,6 @@ function hasCredentials() {
 module.exports = {
   SainsburysBasket,
   productSummary,
-  productMatchesAllTerms
+  productMatchesAllTerms,
+  addOrder
 };

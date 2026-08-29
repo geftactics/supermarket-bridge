@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.22
+
+- Try the next matching Sainsbury's candidate if adding the first product to
+  the basket fails.
+
 ## 0.1.21
 
 - Include the add-on version in the startup log banner.
